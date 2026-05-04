@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,10 +6,15 @@
 <title>Ramasimbola Links</title>
 
 <style>
-body{font-family:Arial;background:#111;color:white;margin:0;padding:10px;}
-h2{text-align:center;}
+body{
+font-family:Arial;
+background:#111;
+color:white;
+margin:0;
+padding:10px;
+}
 
-.hidden{display:none;}
+h2{text-align:center;}
 
 .grid{
 display:grid;
@@ -30,11 +34,14 @@ padding:8px;
 margin-top:5px;
 border:none;
 border-radius:6px;
+cursor:pointer;
 }
 
 .download{background:#4CAF50;color:white;}
 .video{background:#2196F3;color:white;}
 .adminBtn{background:#ff9800;color:white;}
+
+.hidden{display:none;}
 
 #lockScreen,#adminPanel{
 position:fixed;
@@ -45,6 +52,7 @@ display:flex;
 flex-direction:column;
 justify-content:center;
 align-items:center;
+gap:10px;
 }
 </style>
 </head>
@@ -75,7 +83,7 @@ align-items:center;
 <!-- MAIN -->
 <div id="app" class="hidden">
 
-<h2 id="title">📱</h2>
+<h2 id="title"></h2>
 
 <button class="adminBtn" onclick="openAdmin()">Admin</button>
 
@@ -93,7 +101,7 @@ mode:"public",
 secretKey:"abc123"
 };
 
-/* 📦 LINKS */
+/* 📦 LINKS DEMO */
 let links=[
 {title:"Fichier 1",url:"#",type:"download"},
 {title:"Vidéo 1",url:"https://www.youtube.com/embed/dQw4w9WgXcQ",type:"video"}
@@ -102,11 +110,9 @@ let links=[
 /* 👤 OWNER */
 let url=new URL(window.location.href);
 let owner=url.searchParams.get("owner") || "Ramasimbola";
-
-/* 🔥 TITLE */
 document.getElementById("title").innerText="📱 "+owner+" Links";
 
-/* 🔐 UNLISTED CHECK */
+/* 🔐 CHECK UNLISTED */
 function checkAccess(){
 let key=url.searchParams.get("key");
 
@@ -115,9 +121,10 @@ document.body.innerHTML="<h2 style='text-align:center;margin-top:50px'>🔒 Acc�
 }
 }
 
-/* 🔓 PUBLIC PASSWORD (optional) */
+/* 🔓 UNLOCK */
 function unlock(){
 let p=document.getElementById("pass").value;
+
 if(p===config.password){
 startApp();
 }else{
@@ -125,7 +132,7 @@ alert("mauvais mot de passe");
 }
 }
 
-/* 🚀 START */
+/* 🚀 START APP */
 function startApp(){
 document.getElementById("lockScreen").style.display="none";
 document.getElementById("app").classList.remove("hidden");
@@ -133,9 +140,10 @@ render();
 checkAccess();
 }
 
-/* 📦 RENDER */
+/* 📦 RENDER LINKS */
 function render(){
 let html="";
+
 links.forEach(l=>{
 if(l.type==="download"){
 html+=`
@@ -151,6 +159,7 @@ html+=`
 </div>`;
 }
 });
+
 document.getElementById("list").innerHTML=html;
 }
 
@@ -170,7 +179,8 @@ document.getElementById("adminPanel").classList.add("hidden");
 
 function setMode(m){
 config.mode=m;
-alert("Mode: "+m);
+alert("Mode changé : "+m);
+location.reload();
 }
 
 function saveSettings(){
@@ -180,13 +190,11 @@ let a=document.getElementById("adminPass").value;
 if(k)config.secretKey=k;
 if(a)config.adminPass=a;
 
-alert("Sauvegardé localement");
-closeAdmin();
+alert("Sauvegardé");
+location.reload();
 }
 
 /* 🚀 INIT */
-
-/* PUBLIC MODE CHECK */
 if(config.mode==="public"){
 document.getElementById("app").classList.remove("hidden");
 render();
