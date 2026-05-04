@@ -1,82 +1,201 @@
+
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mes Liens</title>
+<title>Ramasimbola Links</title>
 
 <style>
-body {
-  font-family: Arial;
-  background: #111;
-  color: white;
-  margin: 0;
-  padding: 10px;
+body{font-family:Arial;background:#111;color:white;margin:0;padding:10px;}
+h2{text-align:center;}
+
+.hidden{display:none;}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
 }
 
-h2 {
-  text-align: center;
+.card{
+background:#222;
+padding:10px;
+border-radius:10px;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+button{
+width:100%;
+padding:8px;
+margin-top:5px;
+border:none;
+border-radius:6px;
 }
 
-.card {
-  background: #222;
-  padding: 10px;
-  border-radius: 10px;
-}
+.download{background:#4CAF50;color:white;}
+.video{background:#2196F3;color:white;}
+.adminBtn{background:#ff9800;color:white;}
 
-button {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  border: none;
-  border-radius: 6px;
-}
-
-.download {
-  background: #4CAF50;
-  color: white;
-}
-
-.video {
-  background: #2196F3;
-  color: white;
+#lockScreen,#adminPanel{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:#000;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
 }
 </style>
 </head>
 
 <body>
 
-<h2>📱 Mes Liens</h2>
+<!-- 🔒 LOCK (option public password) -->
+<div id="lockScreen" class="hidden">
+<h2>🔒 Accès protégé</h2>
+<input id="pass" type="password" placeholder="mot de passe">
+<button onclick="unlock()">Entrer</button>
+</div>
 
-<div class="grid">
+<!-- 🧑‍💻 ADMIN -->
+<div id="adminPanel" class="hidden">
+<h2>Admin Panel</h2>
 
-  <div class="card">
-    <p>📥 Fichier 1</p>
-    <button class="download" onclick="window.open('https://example.com')">
-      Télécharger
-    </button>
-  </div>
+<button onclick="setMode('public')">Mode PUBLIC</button>
+<button onclick="setMode('unlisted')">Mode UNLISTED</button>
 
-  <div class="card">
-    <p>🎬 Vidéo</p>
-    <button class="video" onclick="document.getElementById('v1').style.display='block'">
-      Voir vidéo
-    </button>
+<input id="secretKey" placeholder="clé unlisted">
+<input id="adminPass" placeholder="mot de passe admin">
 
-    <div id="v1" style="display:none; margin-top:10px;">
-      <iframe width="100%" height="150"
-      src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-      frameborder="0"></iframe>
-    </div>
-  </div>
+<button onclick="saveSettings()">Sauvegarder</button>
+<button onclick="closeAdmin()">Fermer</button>
+</div>
+
+<!-- MAIN -->
+<div id="app" class="hidden">
+
+<h2 id="title">📱</h2>
+
+<button class="adminBtn" onclick="openAdmin()">Admin</button>
+
+<div id="list" class="grid"></div>
 
 </div>
+
+<script>
+
+/* 🧠 CONFIG */
+let config={
+password:"1234",
+adminPass:"admin123",
+mode:"public",
+secretKey:"abc123"
+};
+
+/* 📦 LINKS */
+let links=[
+{title:"Fichier 1",url:"#",type:"download"},
+{title:"Vidéo 1",url:"https://www.youtube.com/embed/dQw4w9WgXcQ",type:"video"}
+];
+
+/* 👤 OWNER */
+let url=new URL(window.location.href);
+let owner=url.searchParams.get("owner") || "Ramasimbola";
+
+/* 🔥 TITLE */
+document.getElementById("title").innerText="📱 "+owner+" Links";
+
+/* 🔐 UNLISTED CHECK */
+function checkAccess(){
+let key=url.searchParams.get("key");
+
+if(config.mode==="unlisted" && key!==config.secretKey){
+document.body.innerHTML="<h2 style='text-align:center;margin-top:50px'>🔒 Accès non autorisé</h2>";
+}
+}
+
+/* 🔓 PUBLIC PASSWORD (optional) */
+function unlock(){
+let p=document.getElementById("pass").value;
+if(p===config.password){
+startApp();
+}else{
+alert("mauvais mot de passe");
+}
+}
+
+/* 🚀 START */
+function startApp(){
+document.getElementById("lockScreen").style.display="none";
+document.getElementById("app").classList.remove("hidden");
+render();
+checkAccess();
+}
+
+/* 📦 RENDER */
+function render(){
+let html="";
+links.forEach(l=>{
+if(l.type==="download"){
+html+=`
+<div class="card">
+<p>${l.title}</p>
+<button class="download" onclick="window.open('${l.url}')">Télécharger</button>
+</div>`;
+}else{
+html+=`
+<div class="card">
+<p>${l.title}</p>
+<button class="video" onclick="window.open('${l.url}')">Voir vidéo</button>
+</div>`;
+}
+});
+document.getElementById("list").innerHTML=html;
+}
+
+/* 🧑‍💻 ADMIN */
+function openAdmin(){
+let p=prompt("mot de passe admin ?");
+if(p!==config.adminPass){
+alert("refusé");
+return;
+}
+document.getElementById("adminPanel").classList.remove("hidden");
+}
+
+function closeAdmin(){
+document.getElementById("adminPanel").classList.add("hidden");
+}
+
+function setMode(m){
+config.mode=m;
+alert("Mode: "+m);
+}
+
+function saveSettings(){
+let k=document.getElementById("secretKey").value;
+let a=document.getElementById("adminPass").value;
+
+if(k)config.secretKey=k;
+if(a)config.adminPass=a;
+
+alert("Sauvegardé localement");
+closeAdmin();
+}
+
+/* 🚀 INIT */
+
+/* PUBLIC MODE CHECK */
+if(config.mode==="public"){
+document.getElementById("app").classList.remove("hidden");
+render();
+checkAccess();
+}else{
+document.getElementById("lockScreen").classList.remove("hidden");
+}
+
+</script>
 
 </body>
 </html>
